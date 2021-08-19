@@ -1,35 +1,44 @@
-import * as React from 'react';
-import { connect } from 'react-redux';
-import { RouteComponentProps } from 'react-router';
-import { ApplicationState } from '../store';
-import * as CounterStore from '../store/Counter';
+import { resolve } from "inversify-react";
+import * as React from "react";
+import { CounterService } from "../services/CounterService";
 
-type CounterProps =
-    CounterStore.CounterState &
-    typeof CounterStore.actionCreators &
-    RouteComponentProps<{}>;
+export default class Counter extends React.PureComponent<{}, { count: number }> {
+	@resolve(CounterService)
+	private _counterService: CounterService;
 
-class Counter extends React.PureComponent<CounterProps> {
-    public render() {
-        return (
-            <React.Fragment>
-                <h1>Counter</h1>
+	constructor(props: any) {
+		super(props);
+		this.state = { count: 0 };
+	}
 
-                <p>This is a simple example of a React component.</p>
+	onIncrement() {
+		this._counterService.increment();
+		this.setState({ count: this._counterService.count });
+	}
 
-                <p aria-live="polite">Current count: <strong>{this.props.count}</strong></p>
+	public render() {
+		return (
+			<React.Fragment>
+				<h1>Counter</h1>
 
-                <button type="button"
-                    className="btn btn-primary btn-lg"
-                    onClick={() => { this.props.increment(); }}>
-                    Increment
-                </button>
-            </React.Fragment>
-        );
-    }
-};
+				<p>This is a simple example of a React component.</p>
 
-export default connect(
-    (state: ApplicationState) => state.counter,
-    CounterStore.actionCreators
-)(Counter);
+				<p aria-live="polite">
+					Current count: <strong>{this.state.count}</strong>
+				</p>
+
+				<button
+					type="button"
+					className="btn btn-primary btn-lg"
+					onClick={() => {
+						this.onIncrement();
+					}}
+				>
+					Increment
+				</button>
+			</React.Fragment>
+		);
+	}
+}
+
+
